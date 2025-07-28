@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>项目 View 趋势图</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .tabs { margin-bottom: 20px; }
+    .tab { cursor: pointer; padding: 10px 20px; display: inline-block; border: 1px solid #ccc; border-bottom: none; }
+    .tab.active { background: #f0f0f0; font-weight: bold; }
+    canvas { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <h1>项目 View 趋势图</h1>
+  <div class="tabs" id="tabs"></div>
+  <canvas id="chart"></canvas>
+
+  <script>
+    let rawData = [];
+    let currentProject = '';
+    let chart;
+
+    function groupDataByDate(data, project) {
+      const filtered = data.filter(d => d.project === project);
+      const dateMap = {};
+      filtered.forEach(d => {
+        if (!dateMap[d.date]) dateMap[d.date] = 0;
+        dateMap[d.date] += parseInt(d.views);
+      });
+      const sorted = Object.entries(dateMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+      return {
+        labels: sorted.map(e => e[0]),
+        values: sorted.map(e => e[1])
+      };
+    }
+
+    function renderTabs(projects) {
+      const tabContainer = document.getElementById('tabs');
+      tabContainer.innerHTML = '';
+      projects.forEach(project => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (project === currentProject ? ' active' : '');
+        tab.innerText = project;
+        tab.onclick = () => {
+          currentProject = project;
+          renderTabs(projects);
+          updateChart();
+        };
+        tabContainer.appendChild(tab);
+      });
+    }
+
+    function updateChart() {
+      const grouped = groupDataByDate(rawData, currentProject);
+      const config = {
+        type: 'line',
+        data: {
+          labels: grouped.labels,
+          datasets: [{
+            label: currentProject + ' Views',
+            data: grouped.values,
+            fill: false,
+            borderColor: 'blue',
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      };
+      if (chart) chart.destroy();
+      const ctx = document.getElementById('chart').getContext('2d');
+      chart = new Chart(ctx, config);
+    }
+
+    Papa.parse('data.csv', {
+      download: true,
+      header: true,
+      complete: function(results) {
+        rawData = results.data.filter(d => d.project && d.episode && d.views && d.date);
+        const projects = [...new Set(rawData.map(d => d.project))];
+        currentProject = projects[0];
+        renderTabs(projects);
+        updateChart();
+      }
+    });
+  </script>
