@@ -26,6 +26,7 @@
       justify-content: center;
       gap: 10px;
       margin-bottom: 30px;
+      flex-wrap: wrap;
     }
     .tab {
       cursor: pointer;
@@ -66,33 +67,68 @@
 
   <script>
     let rawData = [];
-    let currentProject = '';
+    let currentGroup = '';
     let chart;
 
-    function groupDataByDate(data, project) {
-      const filtered = data.filter(d => d.project === project);
+    // 定义组合项目：tab 名 -> 子项目数组
+    const projectGroups = {
+      "语言动物": ["荷语猫", "英语猫"],
+      "魔法师系列": ["魔法师系列"]
+    };
+
+    function groupDataByDateForProjects(data, projects) {
       const dateMap = {};
-      filtered.forEach(d => {
-        if (!dateMap[d.date]) dateMap[d.date] = 0;
-        dateMap[d.date] += parseInt(d.views);
+
+      projects.forEach(project => {
+        const filtered = data.filter(d => d.project === project);
+        filtered.forEach(d => {
+          if (!dateMap[d.date]) dateMap[d.date] = {};
+          if (!dateMap[d.date][project]) dateMap[d.date][project] = 0;
+          dateMap[d.date][project] += parseInt(d.views);
+        });
       });
-      const sorted = Object.entries(dateMap).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+
+      const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
+      const datasets = projects.map(project => {
+        return {
+          label: project,
+          data: sortedDates.map(date => dateMap[date][project] || 0),
+          fill: false,
+          borderColor: getColor(project),
+          backgroundColor: getColor(project),
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        };
+      });
+
       return {
-        labels: sorted.map(e => e[0]),
-        values: sorted.map(e => e[1])
+        labels: sortedDates,
+        datasets: datasets
       };
     }
 
-    function renderTabs(projects) {
+    function getColor(projectName) {
+      const colors = [
+        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"
+      ];
+      let hash = 0;
+      for (let i = 0; i < projectName.length; i++) {
+        hash = projectName.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    function renderTabs(groupNames) {
       const tabContainer = document.getElementById('tabs');
       tabContainer.innerHTML = '';
-      projects.forEach(project => {
+      groupNames.forEach(group => {
         const tab = document.createElement('div');
-        tab.className = 'tab' + (project === currentProject ? ' active' : '');
-        tab.innerText = project;
+        tab.className = 'tab' + (group === currentGroup ? ' active' : '');
+        tab.innerText = group;
         tab.onclick = () => {
-          currentProject = project;
-          renderTabs(projects);
+          currentGroup = group;
+          renderTabs(groupNames);
           updateChart();
         };
         tabContainer.appendChild(tab);
@@ -100,26 +136,17 @@
     }
 
     function updateChart() {
-      const grouped = groupDataByDate(rawData, currentProject);
+      const grouped = groupDataByDateForProjects(rawData, projectGroups[currentGroup]);
       const config = {
         type: 'line',
         data: {
           labels: grouped.labels,
-          datasets: [{
-            label: currentProject + ' Views',
-            data: grouped.values,
-            fill: true,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
+          datasets: grouped.datasets
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { display: false },
+            legend: { display: true },
             tooltip: { mode: 'index', intersect: false }
           },
           scales: {
@@ -141,9 +168,9 @@
       header: true,
       complete: function(results) {
         rawData = results.data.filter(d => d.project && d.episode && d.views && d.date);
-        const projects = [...new Set(rawData.map(d => d.project))];
-        currentProject = projects[0];
-        renderTabs(projects);
+        const groupNames = Object.keys(projectGroups);
+        currentGroup = groupNames[0];
+        renderTabs(groupNames);
         updateChart();
       }
     });
