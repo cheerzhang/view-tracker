@@ -76,7 +76,7 @@
       "语言猫系列": ["荷语猫", "英语猫"],
       "瞎聊shorts": ["tk瞎聊", "yt瞎聊"],
       "魔法师系列": ["魔法师系列"],
-      "歌曲": "EN"
+      "歌曲": "special-bar"
     };
 
     function groupDataByDateForProjects(data, projects) {
@@ -139,9 +139,9 @@
     }
 
     function updateChart() {
-      if (projectGroups[currentGroup] === "EN") {
+      if (projectGroups[currentGroup] === "special-bar") {
         // 渲染柱状图
-        Papa.parse('projectA.csv', {
+        Papa.parse('music.csv', {
           download: true,
           header: true,
           complete: function(results) {
