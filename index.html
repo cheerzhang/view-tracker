@@ -71,11 +71,12 @@
     let currentGroup = '';
     let chart;
 
-    // 定义组合项目：tab 名 -> 子项目数组
+    // 分组项目和特殊图表标记
     const projectGroups = {
       "语言猫系列": ["荷语猫", "英语猫"],
       "瞎聊shorts": ["tk瞎聊", "yt瞎聊"],
-      "魔法师系列": ["魔法师系列"]
+      "魔法师系列": ["魔法师系列"],
+      "歌曲": "EN"
     };
 
     function groupDataByDateForProjects(data, projects) {
@@ -138,33 +139,99 @@
     }
 
     function updateChart() {
-      const grouped = groupDataByDateForProjects(rawData, projectGroups[currentGroup]);
+      if (projectGroups[currentGroup] === "EN") {
+        // 渲染柱状图
+        Papa.parse('projectA.csv', {
+          download: true,
+          header: true,
+          complete: function(results) {
+            const data = results.data.filter(d => d.project && d.title && d.views);
+            renderBarChart(data);
+          }
+        });
+      } else {
+        // 渲染折线图
+        const grouped = groupDataByDateForProjects(rawData, projectGroups[currentGroup]);
+        const config = {
+          type: 'line',
+          data: {
+            labels: grouped.labels,
+            datasets: grouped.datasets
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              x: { title: { display: true, text: '日期' } },
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: '浏览量' }
+              }
+            }
+          }
+        };
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('chart').getContext('2d');
+        chart = new Chart(ctx, config);
+      }
+    }
+
+    function renderBarChart(data) {
+      const titleMap = {};
+      data.forEach(d => {
+        const title = d.title;
+        const views = parseInt(d.views);
+        if (!titleMap[title]) {
+          titleMap[title] = 0;
+        }
+        titleMap[title] += views;
+      });
+
+      const labels = Object.keys(titleMap);
+      const views = labels.map(title => titleMap[title]);
+
       const config = {
-        type: 'line',
+        type: 'bar',
         data: {
-          labels: grouped.labels,
-          datasets: grouped.datasets
+          labels: labels,
+          datasets: [{
+            label: '总播放量',
+            data: views,
+            backgroundColor: '#3b82f6'
+          }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { display: true },
+            legend: { display: false },
             tooltip: { mode: 'index', intersect: false }
           },
           scales: {
-            x: { title: { display: true, text: '日期' } },
+            x: {
+              title: { display: true, text: '作品标题' },
+              ticks: {
+                autoSkip: false,
+                maxRotation: 45,
+                minRotation: 0
+              }
+            },
             y: {
               beginAtZero: true,
-              title: { display: true, text: '浏览量' }
+              title: { display: true, text: '总播放量' }
             }
           }
         }
       };
+
       if (chart) chart.destroy();
       const ctx = document.getElementById('chart').getContext('2d');
       chart = new Chart(ctx, config);
     }
 
+    // 初始加载折线图主数据
     Papa.parse('data.csv', {
       download: true,
       header: true,
