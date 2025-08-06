@@ -196,8 +196,8 @@
       .slice(0, 10); // top 10
 
 
-      const labels = Object.keys(titleMap);
-      const views = labels.map(title => titleMap[title]);
+      const labels = sortedEntries.map(entry => entry[0]);
+      const views = sortedEntries.map(entry => entry[1]);
 
       const config = {
         type: 'bar',
