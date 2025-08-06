@@ -189,6 +189,12 @@
         }
         titleMap[title] += views;
       });
+      
+      // top 10 only
+      const sortedEntries = Object.entries(titleMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10); // top 10
+
 
       const labels = Object.keys(titleMap);
       const views = labels.map(title => titleMap[title]);
@@ -198,7 +204,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: '总播放量',
+            label: '总播放量 top10',
             data: views,
             backgroundColor: '#3b82f6'
           }]
