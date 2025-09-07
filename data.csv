@@ -10,7 +10,8 @@ project,episode,views,date
 荷语猫,ep9,505,2025-08-11
 荷语猫,ep10,560,2025-08-18
 荷语猫,ep11,13,2025-08-25
-荷语猫,ep12,36,2025-09-01
+荷语猫,ep12,38,2025-09-01
+荷语猫,ep13,0,2025-09-08
 英语猫,ep1,6,2025-06-19
 英语猫,ep2,6,2025-06-23
 英语猫,ep3,312,2025-06-30
@@ -22,7 +23,8 @@ project,episode,views,date
 英语猫,ep9,515,2025-08-11
 英语猫,ep10,3200,2025-08-18
 英语猫,ep11,631,2025-08-25
-英语猫,ep12,0,2025-09-01
+英语猫,ep12,821,2025-09-01
+英语猫,ep13,0,2025-09-08
 魔法师系列,ep1,526,2025-06-19
 魔法师系列,ep2,638,2025-06-23
 魔法师系列,ep3,1100,2025-06-30
@@ -31,12 +33,12 @@ project,episode,views,date
 魔法师系列,ep6,645,2025-07-14
 魔法师系列,ep7,540,2025-07-28
 魔法师系列,ep8,0,2025-07-03
-设计IG,WindowToTheMars,22,2025-09-01
+设计IG,WindowToTheMars,27,2025-09-01
 设计IG,CampingOnTheMoon,2,2025-09-02
 设计IG,WatchFromTheSun,4,2025-09-03
 设计TK,WindowToTheMars,241,2025-09-01
-设计TK,CampingOnTheMoon,0,2025-09-02
+设计TK,CampingOnTheMoon,37,2025-09-02
 设计TK,WatchFromTheSun,0,2025-09-03
-设计YT,WindowToTheMars,38,2025-09-01
-设计YT,CampingOnTheMoon,0,2025-09-02
+设计YT,WindowToTheMars,4,2025-09-01
+设计YT,CampingOnTheMoon,6,2025-09-02
 设计YT,WatchFromTheSun,0,2025-09-03
