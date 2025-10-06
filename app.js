@@ -197,7 +197,16 @@ function computeAggregations(rows, project, mode, range){
     smooth: true,
     showSymbol: true,
     symbolSize: 6,
-    data: x.map(d => days.get(d)[p] ?? 0),
+    data: x.map(d => {
+      const row = filtered.find(r => r.dateISO === d && r.platform === p);
+      if (row) {
+        const y = (mode === "daily")
+          ? (row.views_daily ?? 0)
+          : (row.views_cum   ?? 0);
+        return { value: [d, Math.max(0, +y || 0)], title: row.title };
+      }
+      return { value: [d, 0], title: '' };
+    }),
     lineStyle: { width: 2 },
     itemStyle: { color: STATE.colors[p] || '#8b5cf6' }
   }));
@@ -262,7 +271,8 @@ function computeChunkedAvgByPlatform(rows, project, selectedPlatforms) {
   return result;
 }
 
-let MINI_INSTANCES = []; // 存已创建的小图，切换时销毁避免内存泄漏
+let MINI_INSTANCES = [];
+
 function renderChunkGrid(chunkMap, colors) {
   // 清理旧图
   MINI_INSTANCES.forEach(inst => { try { inst.dispose(); } catch {} });
@@ -270,28 +280,32 @@ function renderChunkGrid(chunkMap, colors) {
 
   const container = document.getElementById('chunkGrid');
   const plats = Array.from(chunkMap.keys()).sort();
-  container.innerHTML = plats.map(p => {
+
+  // ✅ 用索引作为唯一后缀，避免中文被替换后重名
+  container.innerHTML = plats.map((p, i) => {
     const color = colors[p] || '#8b5cf6';
+    const id = `mini-${i}`;           // ← 与下方实例化对应
     return `
       <div class="chunk">
         <div class="chunk-head">
           <div><span class="chunk-dot" style="background:${color}"></span>${p}</div>
           <div>10-upload avg</div>
         </div>
-        <div class="chart-mini" id="mini-${cssSafe(p)}"></div>
+        <div class="chart-mini" id="${id}"></div>
       </div>
     `;
   }).join("");
 
-  plats.forEach(p => {
-    const el = document.getElementById(`mini-${cssSafe(p)}`);
+  plats.forEach((p, i) => {
+    const id = `mini-${i}`;           // ← 保持一致
+    const el = document.getElementById(id);
     if (!el) return;
+    const data = chunkMap.get(p) || [];
     const chart = echarts.init(el);
-    const data = chunkMap.get(p);
     chart.setOption({
       grid: { left: 8, right: 8, top: 6, bottom: 12 },
-      xAxis: { type:'category', data: data.map((_,i)=> (i+1).toString()), axisTick:{show:false}, axisLine:{show:false}, axisLabel:{show:false} },
-      yAxis: { type:'value', min: 0, axisLine:{show:false}, axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false} },
+      xAxis: { type:'category', data: data.map((_,idx)=> String(idx+1)), axisTick:{show:false}, axisLine:{show:false}, axisLabel:{show:false} },
+      yAxis: { type:'value', min:0, axisLine:{show:false}, axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false} },
       tooltip: { trigger:'axis', formatter:(params)=> {
         const p0 = params[0]; return `Chunk ${p0.axisValue}: <b>${(+p0.value||0).toLocaleString()}</b>`;
       }},
@@ -304,7 +318,6 @@ function renderChunkGrid(chunkMap, colors) {
     MINI_INSTANCES.push(chart);
   });
 }
-function cssSafe(s){ return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
 /* ---- Chart render ---- */
 function ensureChart(){
@@ -316,12 +329,37 @@ function renderChart(title, x, series){
   const chart = ensureChart();
   chart.setOption({
     backgroundColor: 'transparent',
-    tooltip: { trigger:'axis', axisPointer:{type:'line'}, formatter:(params)=>{
-      const date = params?.[0]?.axisValueLabel || '';
-      const lines = params.map(p => `<div style="display:flex;justify-content:space-between;gap:12px"><span>● ${p.seriesName}</span><b>${p.value.toLocaleString()}</b></div>`);
-      const total = params.reduce((s,p)=>s+(+p.value||0),0);
-      return `<div style="padding:6px 2px"><div style="margin-bottom:6px"><b>${date}</b></div>${lines.join("")}<hr style="border:none;border-top:1px solid #2a2f3d;margin:6px 0"/><div style="display:flex;justify-content:space-between"><span>Total</span><b>${total.toLocaleString()}</b></div></div>`;
-    }},
+    tooltip: {
+      trigger:'axis',
+      axisPointer:{type:'line'},
+      formatter:(params)=>{
+        if (!params || !params.length) return '';
+        const first = params[0];
+        const title = first.data?.title || first.axisValueLabel || '';
+
+        const lines = params.map(p => {
+          const v = Array.isArray(p.value) ? p.value[1] : p.value;
+          return `<div style="display:flex;justify-content:space-between;gap:12px">
+                    <span>● ${p.seriesName}</span>
+                    <b>${(+v || 0).toLocaleString()}</b>
+                  </div>`;
+        });
+
+        const total = params.reduce((s,p)=>{
+          const v = Array.isArray(p.value) ? p.value[1] : p.value;
+          return s + (+v || 0);
+        }, 0);
+
+        return `<div style="padding:6px 2px">
+                  <div style="margin-bottom:6px"><b>${title}</b></div>
+                  ${lines.join("")}
+                  <hr style="border:none;border-top:1px solid #2a2f3d;margin:6px 0"/>
+                  <div style="display:flex;justify-content:space-between">
+                    <span>Total</span><b>${total.toLocaleString()}</b>
+                  </div>
+                </div>`;
+      }
+    },
     legend: { top: 0, textStyle:{color:'#aab2c5'} },
     grid: { left: 40, right: 20, top: 40, bottom: 40 },
     xAxis: { type:'category', data: x, boundaryGap:false, axisLine:{lineStyle:{color:'#2a2f3d'}}, axisLabel:{color:'#aab2c5'} },
