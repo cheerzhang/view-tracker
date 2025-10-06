@@ -215,6 +215,97 @@ function computeAggregations(rows, project, mode, range){
   return { x, series, platforms: Array.from(platforms), kpis:{ totalViews, totalLikes, totalComments, avgPerUpload } };
 }
 
+
+// 计算“每 10 个上传的平均播放”（按时间顺序分块），返回：Map(platform -> [avg1, avg2, ...])
+function computeChunkedAvgByPlatform(rows, project, selectedPlatforms) {
+  // 仅当前项目
+  const projRows = rows.filter(r => r.project === project);
+  // 按“上传”聚合：一个上传 = 同平台 + 同标题
+  const uploadsByPlatform = new Map(); // plat -> [{ firstDate, total }]
+  const byKey = new Map(); // (plat__title) -> { plat, title, firstDate, sumDaily, lastCum }
+
+  for (const r of projRows) {
+    if (selectedPlatforms.length && !selectedPlatforms.includes(r.platform)) continue;
+    const key = `${r.platform}__${r.title}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, { plat: r.platform, title: r.title, firstDate: r.date, sumDaily: 0, lastCum: null, lastDate: r.date });
+    }
+    const u = byKey.get(key);
+    if (r.views_daily != null) u.sumDaily += Math.max(0, +r.views_daily || 0);
+    if (r.views_cum != null && (u.lastCum == null || r.date > u.lastDate)) u.lastCum = +r.views_cum;
+    if (r.date < u.firstDate) u.firstDate = r.date;
+    if (r.date > u.lastDate) u.lastDate = r.date;
+  }
+
+  // 整理成每个平台的上传列表，并按 firstDate 排序
+  for (const u of byKey.values()) {
+    const total = (u.lastCum != null ? u.lastCum : u.sumDaily);
+    if (!uploadsByPlatform.has(u.plat)) uploadsByPlatform.set(u.plat, []);
+    uploadsByPlatform.get(u.plat).push({ total, firstDate: u.firstDate });
+  }
+  for (const list of uploadsByPlatform.values()) {
+    list.sort((a,b)=> +a.firstDate - +b.firstDate);
+  }
+
+  // 分块：每 10 个上传一组，取该组 total 的平均
+  const result = new Map();
+  for (const [plat, list] of uploadsByPlatform.entries()) {
+    const chunkSize = 10;
+    const avgs = [];
+    for (let i=0; i<list.length; i+=chunkSize) {
+      const chunk = list.slice(i, i+chunkSize);
+      const avg = chunk.length ? Math.round(chunk.reduce((s,x)=>s+(x.total||0),0)/chunk.length) : 0;
+      avgs.push(avg);
+    }
+    result.set(plat, avgs);
+  }
+  return result;
+}
+
+let MINI_INSTANCES = []; // 存已创建的小图，切换时销毁避免内存泄漏
+function renderChunkGrid(chunkMap, colors) {
+  // 清理旧图
+  MINI_INSTANCES.forEach(inst => { try { inst.dispose(); } catch {} });
+  MINI_INSTANCES = [];
+
+  const container = document.getElementById('chunkGrid');
+  const plats = Array.from(chunkMap.keys()).sort();
+  container.innerHTML = plats.map(p => {
+    const color = colors[p] || '#8b5cf6';
+    return `
+      <div class="chunk">
+        <div class="chunk-head">
+          <div><span class="chunk-dot" style="background:${color}"></span>${p}</div>
+          <div>10-upload avg</div>
+        </div>
+        <div class="chart-mini" id="mini-${cssSafe(p)}"></div>
+      </div>
+    `;
+  }).join("");
+
+  plats.forEach(p => {
+    const el = document.getElementById(`mini-${cssSafe(p)}`);
+    if (!el) return;
+    const chart = echarts.init(el);
+    const data = chunkMap.get(p);
+    chart.setOption({
+      grid: { left: 8, right: 8, top: 6, bottom: 12 },
+      xAxis: { type:'category', data: data.map((_,i)=> (i+1).toString()), axisTick:{show:false}, axisLine:{show:false}, axisLabel:{show:false} },
+      yAxis: { type:'value', min: 0, axisLine:{show:false}, axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false} },
+      tooltip: { trigger:'axis', formatter:(params)=> {
+        const p0 = params[0]; return `Chunk ${p0.axisValue}: <b>${(+p0.value||0).toLocaleString()}</b>`;
+      }},
+      series: [{
+        name: p, type:'line', smooth:true, symbol:'circle', symbolSize:4,
+        data, lineStyle:{ width:2, color: colors[p] || '#8b5cf6' },
+        itemStyle:{ color: colors[p] || '#8b5cf6' }, areaStyle:{ opacity:0.08, color: colors[p] || '#8b5cf6' }
+      }]
+    });
+    MINI_INSTANCES.push(chart);
+  });
+}
+function cssSafe(s){ return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
+
 /* ---- Chart render ---- */
 function ensureChart(){
   if(STATE.echarts) return STATE.echarts;
@@ -293,6 +384,15 @@ function recomputeAndRender(){
   for(const opt of els.platform.options){ opt.selected = selectedPlats.includes(opt.value); }
 
   renderChart(project, x, filteredSeries);
+
+  // --- chunked 10-upload averages (per platform) ---
+  const chunkMapAll = computeChunkedAvgByPlatform(STATE.dataset, project, []); // 全平台计算
+  // 只渲染选中的平台：如果你想始终渲染全部可把下面这行换回 chunkMapAll
+  const chunkMap = new Map();
+  for (const [plat, arr] of chunkMapAll.entries()) {
+    if (!selectedPlats.length || selectedPlats.includes(plat)) chunkMap.set(plat, arr);
+  }
+  renderChunkGrid(chunkMap, STATE.colors);
 }
 
 /* ---- CSV upload handling ---- */

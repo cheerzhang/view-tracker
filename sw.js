@@ -1,61 +1,47 @@
-// sw.js
-const CACHE_NAME = 'b44-metrics-v2'; // bump version when you change app code
-
-// 仅缓存站点核心文件 + 指定 CDN；避免缓存 chrome-extension 等协议
-const CORE = [
-  '/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest'
-];
-const ALLOWLIST_CDN = [
-  'https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js'
-];
+// sw.js — zero-maintenance
+// 不缓存本地文件；只白名单缓存 ECharts CDN（可删）
+// 这样每次部署都会直接读新版本，无需改 CACHE_NAME
 
 self.addEventListener('install', (e) => {
+  // 立即接管，不等旧 SW
   self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      // 只缓存存在的核心文件
-      for (const u of CORE) {
-        try { await cache.add(u); } catch (err) { /* 忽略 404 during dev */ }
-      }
-      for (const u of ALLOWLIST_CDN) {
-        try { await cache.add(u); } catch {}
-      }
-    })
-  );
 });
 
 self.addEventListener('activate', (e) => {
+  // 清理旧缓存（如果之前有）
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
   );
   self.clients.claim();
 });
 
+const CDN_OK = [
+  'https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js'
+];
+
+// 只缓存白名单 CDN，其他请求一律放过（走网络）
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // 🚫 只处理 http/https，同源优先；排除 chrome-extension / data / blob 等
+  // 忽略非 http(s) 协议
   if (!/^https?:$/.test(url.protocol)) return;
 
-  // 只缓存同源文件，或白名单 CDN
-  const isCore = url.origin === self.location.origin && CORE.includes(url.pathname);
-  const isCdn = ALLOWLIST_CDN.some(s => e.request.url.startsWith(s));
-  if (!(isCore || isCdn)) return;
+  // 同源资源：不缓存，直接走网络（保证每次都是最新）
+  if (url.origin === self.location.origin) return;
 
-  // cache-first
-  e.respondWith(
-    caches.match(e.request).then(hit => {
-      if (hit) return hit;
-      return fetch(e.request).then(res => {
-        // 只缓存成功响应
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
-        }
-        return res;
-      });
-    })
-  );
+  // 仅对白名单 CDN 做 cache-first
+  if (CDN_OK.some(prefix => e.request.url.startsWith(prefix))) {
+    e.respondWith(
+      caches.match(e.request).then(hit => {
+        if (hit) return hit;
+        return fetch(e.request).then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open('cdn-cache-v1').then(c => c.put(e.request, copy));
+          }
+          return res;
+        });
+      })
+    );
+  }
 });
