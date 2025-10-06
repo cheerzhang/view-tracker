@@ -401,35 +401,73 @@ function exportCurrentCSV(){
   a.click();
 }
 
-function recomputeAndRender(){
-  const project = els.project.value || STATE.projects[0];
-  const selectedPlats = Array.from(els.platform.selectedOptions).map(o=>o.value);
-  const range = els.range.value;
 
-  const mode = document.querySelector('.seg-btn.seg-active')?.dataset.mode || 'daily';
+// 填充“平台”下拉（多选）
+function fillPlatformSelect(platforms) {
+  if (!els.platform) return;
+  els.platform.innerHTML = platforms.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+function recomputeAndRender(projectOverride){
+  // 兼容两种调用：recomputeAndRender(event) / recomputeAndRender('项目名') / 空
+  const override = (projectOverride && projectOverride.target)
+    ? projectOverride.target.value         // 来自 <select> 的事件
+    : projectOverride;                     // 直接传字符串或 undefined
+
+  const project = override || (els.project?.value) || STATE.projects[0];
+  STATE.activeProject = project;
+  if (els.project && els.project.value !== project) els.project.value = project; // 保持下拉同步
+
+  // 2) 记录“切换前”的平台选择（可能来自上一个项目）
+  let selectedPlats = Array.from(els.platform?.selectedOptions || []).map(o => o.value);
+
+  // 3) 读取模式与范围
+  const range = els.range?.value || 'all';
+  const modeEl = document.querySelector('.seg-btn.seg-active');
+  const mode = (modeEl?.dataset.mode) || 'daily';
   STATE.mode = mode;
 
+  // 4) 按新项目聚合数据
   const { x, series, platforms, kpis } = computeAggregations(STATE.dataset, project, mode, range);
 
-  // Filter series by selected platforms
-  const filteredSeries = series.filter(s => selectedPlats.includes(s.name))
-    .map(s => ({...s, itemStyle:{color: STATE.colors[s.name] || s.itemStyle.color}, lineStyle:{width:2}}));
+  // 5) 用“新项目的平台”重建多选下拉
+  fillPlatformSelect(platforms);
 
+  // 6) 旧选择 ∩ 新平台；若为空 → 默认全选新平台
+  let appliedPlats = selectedPlats.filter(p => platforms.includes(p));
+  if (appliedPlats.length === 0) appliedPlats = [...platforms];
+
+  // 7) 把选择状态写回下拉
+  if (els.platform) {
+    for (const opt of els.platform.options) {
+      opt.selected = appliedPlats.includes(opt.value);
+    }
+  }
+
+  // 8) 过滤 series（若全选则直接用全部），并打上颜色样式
+  const useAll = appliedPlats.length === platforms.length || appliedPlats.length === 0;
+  const filteredSeries = (useAll ? series : series.filter(s => appliedPlats.includes(s.name)))
+    .map(s => ({
+      ...s,
+      itemStyle: { color: STATE.colors[s.name] || s.itemStyle?.color },
+      lineStyle: { width: 2 }
+    }));
+
+  // 9) KPI / 标题 / Tabs（tabs 可选）
   setKpis(kpis);
-  els.title.textContent = `${project} - Platform Performance`;
-  els.title.style.color = STATE.colors[project] || '#aab2c5';
-  fillSelectors(STATE.projects, platforms); // refresh list (keeps selected)
-  // re-apply selected platforms
-  for(const opt of els.platform.options){ opt.selected = selectedPlats.includes(opt.value); }
+  if (els.title) els.title.textContent = `${project} - Platform Performance`;
+  if (typeof fillProjectTabs === 'function') {
+    fillProjectTabs(STATE.projects, project);
+  }
 
+  // 10) 主图
   renderChart(project, x, filteredSeries);
 
-  // --- chunked 10-upload averages (per platform) ---
+  // 11) 10-upload 块图（尊重选择的平台；如果你想始终显示全部，把 chunkMap 换成 chunkMapAll）
   const chunkMapAll = computeChunkedAvgByPlatform(STATE.dataset, project, []); // 全平台计算
-  // 只渲染选中的平台：如果你想始终渲染全部可把下面这行换回 chunkMapAll
   const chunkMap = new Map();
   for (const [plat, arr] of chunkMapAll.entries()) {
-    if (!selectedPlats.length || selectedPlats.includes(plat)) chunkMap.set(plat, arr);
+    if (useAll || appliedPlats.includes(plat)) chunkMap.set(plat, arr);
   }
   renderChunkGrid(chunkMap, STATE.colors);
 }
