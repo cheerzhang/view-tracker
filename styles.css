@@ -1,0 +1,47 @@
+:root{
+  --bg:#0e0f12; --panel:#12141a; --muted:#9aa3b2; --text:#e6e9ef; --edge:#1f2330;
+  --accent:#8b5cf6; --accent2:#22c55e;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif}
+
+.container{width:100%;max-width:1100px;margin:0 auto;padding:16px}
+.topbar{display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700;font-size:18px}
+.version{opacity:.7}
+
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin:16px 0}
+.filter{display:flex;flex-direction:column;gap:6px}
+.filter select{background:var(--panel);border:1px solid var(--edge);color:var(--text);border-radius:10px;padding:8px 10px;min-width:140px}
+.seg{display:flex;border:1px solid var(--edge);background:var(--panel);padding:4px;border-radius:10px}
+.seg-btn{background:transparent;color:var(--text);border:0;padding:6px 10px;border-radius:8px;cursor:pointer}
+.seg-active{background:#1a1e29}
+.spacer{flex:1}
+.uploader{display:flex;gap:8px;align-items:center}
+.uploader input{color:var(--muted)}
+.uploader button{background:transparent;border:1px solid var(--edge);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+.kpi{background:linear-gradient(135deg, #171a23, #12141a);border:1px solid var(--edge);border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.kpi-title{color:var(--muted);font-size:12px;margin-bottom:8px}
+.kpi-value{font-weight:700;font-size:24px}
+
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:10px 12px;margin-top:12px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin:4px 4px 8px}
+.card-title{font-weight:700}
+.ghost{background:transparent;border:1px solid var(--edge);color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer}
+
+.chart{height:420px;width:100%}
+
+.muted{color:var(--muted);margin:14px 0}
+code{background:#0d1117;border:1px solid #161b22;padding:1px 6px;border-radius:6px}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .filter select{min-width:120px}
+  .chart{height:360px}
+}
+@media (max-width:620px){
+  .kpis{grid-template-columns:1fr}
+}

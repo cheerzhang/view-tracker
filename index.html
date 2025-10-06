@@ -1,254 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>项目 View 趋势图</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f9f9fb;
-      margin: 0;
-      padding: 40px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2rem;
-      color: #222;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-    .tab {
-      cursor: pointer;
-      padding: 10px 24px;
-      border-radius: 8px 8px 0 0;
-      background-color: #e0e0e0;
-      border: 1px solid #ccc;
-      font-weight: 500;
-      transition: background-color 0.3s ease;
-    }
-    .tab:hover {
-      background-color: #d5d5d5;
-    }
-    .tab.active {
-      background-color: white;
-      border-bottom: 1px solid white;
-    }
-    .chart-container {
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-      max-width: 800px;
-      margin: auto;
-    }
-    canvas {
-      max-width: 100%;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Metrics Dashboard</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0e0f12" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- ECharts（首次访问会缓存到 SW）-->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
 <body>
-  <h1>项目 View 趋势图</h1>
-  <div class="tabs" id="tabs"></div>
-  <div class="chart-container">
-    <canvas id="chart"></canvas>
-  </div>
+  <header class="container topbar">
+    <div class="brand">Base44 · Project Metrics</div>
+    <div class="version" id="versionTag">v1.0</div>
+  </header>
 
+  <main class="container">
+    <!-- Filters -->
+    <section class="filters">
+      <div class="filter">
+        <label>Project</label>
+        <select id="projectSelect"></select>
+      </div>
+      <div class="filter">
+        <label>Platform</label>
+        <select id="platformSelect" multiple></select>
+      </div>
+      <div class="filter">
+        <label>Date Range</label>
+        <select id="rangeSelect">
+          <option value="all" selected>All</option>
+          <option value="30">30D</option>
+          <option value="90">90D</option>
+        </select>
+      </div>
+      <div class="filter">
+        <label>Mode</label>
+        <div class="seg">
+          <button class="seg-btn seg-active" data-mode="daily" id="btnDaily">Daily</button>
+          <button class="seg-btn" data-mode="cum" id="btnCum">Cumulative</button>
+        </div>
+      </div>
+      <div class="spacer"></div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi"><div class="kpi-title">Total Views</div><div class="kpi-value" id="kpiViews">-</div></div>
+      <div class="kpi"><div class="kpi-title">Total Likes</div><div class="kpi-value" id="kpiLikes">-</div></div>
+      <div class="kpi"><div class="kpi-title">Total Comments</div><div class="kpi-value" id="kpiComments">-</div></div>
+      <div class="kpi"><div class="kpi-title">Avg per Upload</div><div class="kpi-value" id="kpiAvg">-</div></div>
+    </section>
+
+    <!-- Main chart -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title" id="chartTitle">平台表现</div>
+        <button id="btnExportCsv" class="ghost">Export CSV</button>
+      </div>
+      <div id="chart" class="chart"></div>
+    </section>
+
+    <!-- Notes -->
+    <section class="muted">
+      数据仅存储在你的浏览器中（本地缓存）。支持列：<code>date,project,platform,title</code>，
+      以及 <code>views_daily</code> 或 <code>views_cum</code>（至少一个）。可选：
+      <code>content_type, likes_daily, comments_daily, platform_color, project_color</code>。
+    </section>
+  </main>
+
+  <script src="app.js"></script>
   <script>
-    let rawData = [];
-    let currentGroup = '';
-    let chart;
-
-    // 分组项目和特殊图表标记
-    const projectGroups = {
-      "语言猫系列": ["荷语猫", "英语猫"],
-      "设计系列": ["设计IG", "设计TK", "设计YT"],
-      "出差去火星": ["出差去火星"],
-      "歌曲": "special-bar"
-    };
-
-    function groupDataByDateForProjects(data, projects) {
-      const dateMap = {};
-
-      projects.forEach(project => {
-        const filtered = data.filter(d => d.project === project);
-        filtered.forEach(d => {
-          if (!dateMap[d.date]) dateMap[d.date] = {};
-          if (!dateMap[d.date][project]) dateMap[d.date][project] = 0;
-          dateMap[d.date][project] += parseInt(d.views);
-        });
-      });
-
-      const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
-      const datasets = projects.map(project => {
-        return {
-          label: project,
-          data: sortedDates.map(date => dateMap[date][project] || 0),
-          fill: false,
-          borderColor: getColor(project),
-          backgroundColor: getColor(project),
-          tension: 0.3,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        };
-      });
-
-      return {
-        labels: sortedDates,
-        datasets: datasets
-      };
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
     }
-
-    function getColor(projectName) {
-      const colors = [
-        "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"
-      ];
-      let hash = 0;
-      for (let i = 0; i < projectName.length; i++) {
-        hash = projectName.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colors[Math.abs(hash) % colors.length];
-    }
-
-    function renderTabs(groupNames) {
-      const tabContainer = document.getElementById('tabs');
-      tabContainer.innerHTML = '';
-      groupNames.forEach(group => {
-        const tab = document.createElement('div');
-        tab.className = 'tab' + (group === currentGroup ? ' active' : '');
-        tab.innerText = group;
-        tab.onclick = () => {
-          currentGroup = group;
-          renderTabs(groupNames);
-          updateChart();
-        };
-        tabContainer.appendChild(tab);
-      });
-    }
-
-    function updateChart() {
-      if (projectGroups[currentGroup] === "special-bar") {
-        // 渲染柱状图
-        Papa.parse('music.csv', {
-          download: true,
-          header: true,
-          complete: function(results) {
-            const data = results.data.filter(d => d.project && d.title && d.views);
-            renderBarChart(data);
-          }
-        });
-      } else {
-        // 渲染折线图
-        const grouped = groupDataByDateForProjects(rawData, projectGroups[currentGroup]);
-        const config = {
-          type: 'line',
-          data: {
-            labels: grouped.labels,
-            datasets: grouped.datasets
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: true },
-              tooltip: { mode: 'index', intersect: false }
-            },
-            scales: {
-              x: { title: { display: true, text: '日期' } },
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: '浏览量' }
-              }
-            }
-          }
-        };
-        if (chart) chart.destroy();
-        const ctx = document.getElementById('chart').getContext('2d');
-        chart = new Chart(ctx, config);
-      }
-    }
-
-    function renderBarChart(data) {
-      const titleMap = {};
-      data.forEach(d => {
-        const title = d.title;
-        const views = parseInt(d.views);
-        if (!titleMap[title]) {
-          titleMap[title] = 0;
-        }
-        titleMap[title] += views;
-      });
-      
-      // top 20 only
-      const sortedEntries = Object.entries(titleMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 15); // top 15
-
-
-      const labels = sortedEntries.map(entry => entry[0]);
-      const views = sortedEntries.map(entry => entry[1]);
-
-      const config = {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: '总播放量 top20',
-            data: views,
-            backgroundColor: '#3b82f6'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          scales: {
-            x: {
-              title: { display: true, text: '作品标题' },
-              ticks: {
-                autoSkip: false,
-                maxRotation: 45,
-                minRotation: 0
-              }
-            },
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: '总播放量' }
-            }
-          }
-        }
-      };
-
-      if (chart) chart.destroy();
-      const ctx = document.getElementById('chart').getContext('2d');
-      chart = new Chart(ctx, config);
-    }
-
-    // 初始加载折线图主数据
-    Papa.parse('data.csv', {
-      download: true,
-      header: true,
-      complete: function(results) {
-        rawData = results.data.filter(d => d.project && d.episode && d.views && d.date);
-        const groupNames = Object.keys(projectGroups);
-        currentGroup = groupNames[0];
-        renderTabs(groupNames);
-        updateChart();
-      }
-    });
   </script>
 </body>
 </html>
