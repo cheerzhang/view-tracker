@@ -327,6 +327,8 @@ function ensureChart(){
 }
 function renderChart(title, x, series){
   const chart = ensureChart();
+  // ✅ 先清空，避免遗留上个项目的 series/legend
+  chart.clear();
   chart.setOption({
     backgroundColor: 'transparent',
     tooltip: {
