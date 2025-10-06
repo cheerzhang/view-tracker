@@ -417,6 +417,7 @@ function recomputeAndRender(){
 
   setKpis(kpis);
   els.title.textContent = `${project} - Platform Performance`;
+  els.title.style.color = STATE.colors[project] || '#aab2c5';
   fillSelectors(STATE.projects, platforms); // refresh list (keeps selected)
   // re-apply selected platforms
   for(const opt of els.platform.options){ opt.selected = selectedPlats.includes(opt.value); }
