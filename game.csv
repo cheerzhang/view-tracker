@@ -1,12 +1,12 @@
 character_id,name,element,gender,normal_attack,hp,special_skill,recruit_chance,be_recruited_chance,story
-001,Aria the Brave,Fire,Female,Flame Slash,100,Phoenix Rising,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
-002,Luna Tidecaller,Water,Female,Water Arrow,90,Healing Rain,45,25,A serene wanderer who commands tides and whispers to the sea.
-003,Thorne Ironbark,Wood,Male,Vine Whip,110,Forest Guardian,40,30,A protector of the ancient groves whose roots run deep into the earth.
-004,Zephyr Stormwind,Gold,Male,Lightning Strike,85,Thunder Vortex,35,25,A swift duelist who channels storm energy through his twin blades.
-005,Terra Stoneheart,Earth,Female,Boulder Crush,120,Earthquake,30,30,A stoic guardian who can shake the ground with her might.
-006,Blaze Ashwalker,Fire,Male,Scorching Fist,95,Inferno Burst,45,20,A wandering monk who channels volcanic fury through his palms.
-007,Frost the Eternal,Water,Male,Frost Bite,100,Blizzard Veil,40,30,A being of eternal winter who freezes his own emotions to survive.
-008,Sage Willowmoon,Wood,Female,Leaf Blade,90,Nature’s Embrace,50,25,A healer who believes every life lost weakens the world’s balance.
+001,季未临,Fire,Male,Flame Slash,100,Phoenix Rising,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
+002,阿年,Water,Male,Water Arrow,90,Healing Rain,45,25,A serene wanderer who commands tides and whispers to the sea.
+003,付博,Wood,Male,Vine Whip,110,Forest Guardian,40,30,A protector of the ancient groves whose roots run deep into the earth.
+004,贾知行,Gold,Male,Lightning Strike,85,Thunder Vortex,35,25,A swift duelist who channels storm energy through his twin blades.
+005,娟,Earth,Female,Boulder Crush,120,Earthquake,30,30,A stoic guardian who can shake the ground with her might.
+006,南天,Fire,Male,Scorching Fist,95,Inferno Burst,45,20,A wandering monk who channels volcanic fury through his palms.
+007,詹星桥,Water,Male,Frost Bite,100,Blizzard Veil,40,30,A being of eternal winter who freezes his own emotions to survive.
+008,秦西岭,Wood,Male,Leaf Blade,90,Nature’s Embrace,50,25,A healer who believes every life lost weakens the world’s balance.
 009,Aurelius Goldforge,Gold,Male,Golden Hammer,115,Sun’s Judgement,35,20,A blacksmith who forges weapons of light and justice.
 010,Gaia Earthmother,Earth,Female,Stone Grasp,125,Life Pulse,30,40,An ancient spirit said to breathe life into the soil itself.
 011,Rin Emberchild,Fire,Female,Flame Kick,80,Burning Mirage,50,25,A mischievous dancer who turns every battle into a performance.
@@ -18,4 +18,4 @@ character_id,name,element,gender,normal_attack,hp,special_skill,recruit_chance,b
 017,Celeste Skyborne,Gold,Female,Radiant Shot,90,Heaven’s Call,50,20,A winged archer blessed by celestial light.
 018,Kai Driftcurrent,Water,Male,Harpoon Jab,85,Ocean Surge,45,25,A pirate who rides the waves faster than the wind itself.
 019,Liora Leafwhisper,Wood,Female,Thorn Strike,95,Blooming Curse,40,30,A gentle botanist who commands plants to defend her allies.
-020,南天,Fire,Male,Blaze Punch,100,Dragon’s Roar,45,25,A reckless fighter who believes chaos is the truest form of freedom.
+020,宋贤,Fire,Male,Blaze Punch,100,Dragon’s Roar,45,25,A reckless fighter who believes chaos is the truest form of freedom.
