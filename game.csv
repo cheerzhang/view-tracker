@@ -1,0 +1,3 @@
+id,name,element,gender,normal_attack,hp,special_skill,recruit_chance,be_recruited_chance,story
+001,Hero,Fire,Male,Slash,100,Flame Burst,50,20,A brave fighter who never gives up.
+002,Luna,Water,Female,Water Arrow,90,Healing Rain,40,30,A calm wanderer from the sea.
