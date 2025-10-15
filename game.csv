@@ -1,21 +1,21 @@
 character_id,name,element,gender,normal_attack,hp,special_skill,recruit_chance,be_recruited_chance,story
-001,季未临,Fire,Male,Flame Slash,100,single,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
-002,阿年,Water,Male,Water Arrow,90,single,45,25,A serene wanderer who commands tides and whispers to the sea.
-003,付博,Wood,Male,Vine Whip,110,single,40,30,A protector of the ancient groves whose roots run deep into the earth.
-004,贾知行,Gold,Male,Lightning Strike,85,single,35,25,A swift duelist who channels storm energy through his twin blades.
-005,娟,Earth,Female,Boulder Crush,120,single,30,30,A stoic guardian who can shake the ground with her might.
-006,南天,Fire,Male,Scorching Fist,95,single,45,20,A wandering monk who channels volcanic fury through his palms.
-007,詹星桥,Water,Male,Frost Bite,100,single,40,30,A being of eternal winter who freezes his own emotions to survive.
-008,秦西岭,Wood,Male,Leaf Blade,90,single,50,25,A healer who believes every life lost weakens the world’s balance.
-009,小牧,Gold,Male,Golden Hammer,115,single,35,20,A blacksmith who forges weapons of light and justice.
-010,黄韵祥,Earth,Female,Stone Grasp,125,single,30,40,An ancient spirit said to breathe life into the soil itself.
-011,方己用,Fire,Female,Flame Kick,80,single,50,25,A mischievous dancer who turns every battle into a performance.
-012,楚君,Gold,Male,Steel Pierce,85,single,40,30,An assassin whose blades strike before his shadow reaches the ground.
-013,北湘公主,Water,Female,Wave Strike,95,single,45,35,A bard whose songs guide ships safely home through the storm.
-014,尹竹,Wood,Male,Bark Slam,105,single,30,40,An old druid whose laughter echoes in every forest breeze.
-015,陈云,Fire,Female,Crimson Bolt,100,single,40,30,A commander who leads legions with her burning determination.
-016,林藤蔓,Earth,Male,Stone Punch,130,single,25,45,A living fortress forged from the very bones of the mountain.
-017,扬宣,Gold,Female,Radiant Shot,90,single,50,20,A winged archer blessed by celestial light.
-018,石英,Water,Male,Harpoon Jab,85,single,45,25,A pirate who rides the waves faster than the wind itself.
-019,Liora Leafwhisper,Wood,Female,Thorn Strike,95,single,40,30,A gentle botanist who commands plants to defend her allies.
-020,宋贤,Fire,Male,Blaze Punch,100,single,45,25,A reckless fighter who believes chaos is the truest form of freedom.
+001,季未临,Fire,Male,Flame Slash,100,S001,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
+002,阿年,Water,Male,Water Arrow,90,S001,45,25,A serene wanderer who commands tides and whispers to the sea.
+003,付博,Wood,Male,Vine Whip,110,S001,40,30,A protector of the ancient groves whose roots run deep into the earth.
+004,贾知行,Gold,Male,Lightning Strike,85,S001,35,25,A swift duelist who channels storm energy through his twin blades.
+005,娟,Earth,Female,Boulder Crush,120,S001,30,30,A stoic guardian who can shake the ground with her might.
+006,南天,Fire,Male,Scorching Fist,95,S002,45,20,A wandering monk who channels volcanic fury through his palms.
+007,詹星桥,Water,Male,Frost Bite,100,S002,40,30,A being of eternal winter who freezes his own emotions to survive.
+008,秦西岭,Wood,Male,Leaf Blade,90,S002,50,25,A healer who believes every life lost weakens the world’s balance.
+009,小牧,Gold,Male,Golden Hammer,115,S002,35,20,A blacksmith who forges weapons of light and justice.
+010,黄韵祥,Earth,Female,Stone Grasp,125,S002,30,40,An ancient spirit said to breathe life into the soil itself.
+011,方己用,Fire,Female,Flame Kick,80,S002,50,25,A mischievous dancer who turns every battle into a performance.
+012,楚君,Gold,Male,Steel Pierce,85,S002,40,30,An assassin whose blades strike before his shadow reaches the ground.
+013,北湘公主,Water,Female,Wave Strike,95,S002,45,35,A bard whose songs guide ships safely home through the storm.
+014,尹竹,Wood,Male,Bark Slam,105,S002,30,40,An old druid whose laughter echoes in every forest breeze.
+015,陈云,Fire,Female,Crimson Bolt,100,S002,40,30,A commander who leads legions with her burning determination.
+016,林藤蔓,Earth,Male,Stone Punch,130,S002,25,45,A living fortress forged from the very bones of the mountain.
+017,扬宣,Gold,Female,Radiant Shot,90,S002,50,20,A winged archer blessed by celestial light.
+018,石英,Water,Male,Harpoon Jab,85,S002,45,25,A pirate who rides the waves faster than the wind itself.
+019,Liora Leafwhisper,Wood,Female,Thorn Strike,95,S002,40,30,A gentle botanist who commands plants to defend her allies.
+020,宋贤,Fire,Male,Blaze Punch,100,S002,45,25,A reckless fighter who believes chaos is the truest form of freedom.
