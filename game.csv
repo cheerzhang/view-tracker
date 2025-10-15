@@ -1,6 +1,6 @@
 character_id,name,element,gender,normal_attack,hp,special_skill,recruit_chance,be_recruited_chance,story
-001,季未临,Fire,Male,Flame Slash,100,S001,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
-002,阿年,Water,Male,Water Arrow,90,S001,45,25,A serene wanderer who commands tides and whispers to the sea.
+001,季未临,Fire,Male,Flame Slash,100,S002,50,20,A fearless warrior from the Ember Plains who never retreats from battle.
+002,阿年,Water,Male,Water Arrow,90,S002,45,25,A serene wanderer who commands tides and whispers to the sea.
 003,付博,Wood,Male,Vine Whip,110,S001,40,30,A protector of the ancient groves whose roots run deep into the earth.
 004,贾知行,Gold,Male,Lightning Strike,85,S001,35,25,A swift duelist who channels storm energy through his twin blades.
 005,娟,Earth,Female,Boulder Crush,120,S001,30,30,A stoic guardian who can shake the ground with her might.

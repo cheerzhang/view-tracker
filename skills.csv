@@ -1,6 +1,6 @@
 skill_id,name,description,type,power,element
-S001,Flame Lash,"A whip of pure fire that strikes a single foe.",single,0.4,Fire
-S002,Tidal Wave,"A huge wave that crashes over all enemies.",aoe,0.25,Water
+S001,单体火系攻击,"单体技能,对对方造成本体生命值40%的伤害",single,0.4,Fire
+S002,AOE水系攻击,"AOE技能对所有地方造成本体生命值25%的伤害.",aoe,0.25,Water
 S003,Mend Wounds,"Magically seals a target's injuries, restoring health.",heal,120,None
 S004,Inferno,"Engulfs all non-metallic enemies in a sea of flames.",fire_aoe,0.3,Fire
 S005,Stone Shield,"Forms a temporary barrier of rock that blocks one normal attack.",element_block,0,Earth
