@@ -1,4 +1,4 @@
-character_id,name,element,gender,normal_attack,normal_attack_power,hp,special_skill,recruit_chance,be_recruited_chance,story
+character_id,name,element,gender,normal_attack,normal_attack_power,hp,special_skill,recruit_chance,be_recruited_chance,story,image_url
 001,季未临,Fire,Male,普攻 -30,30,100,S003,90,90,植物学家 神经学家 被不明人士下毒后失忆 现在在寻找自己的记忆.
 002,阿年,Water,Male,普攻 -20,20,90,S002,90,90,A serene wanderer who commands tides and whispers to the sea.
 003,付博,Wood,Male,普攻 -60,60,110,S001,90,90,A protector of the ancient groves whose roots run deep into the earth.
@@ -19,3 +19,4 @@ character_id,name,element,gender,normal_attack,normal_attack_power,hp,special_sk
 018,石英,Water,Male,普攻 -20,20,85,S002,90,90,A pirate who rides the waves faster than the wind itself.
 019,Liora Leafwhisper,Wood,Female,普攻 -20,20,95,S002,90,90,A gentle botanist who commands plants to defend her allies.
 020,宋贤,Fire,Male,普攻 -20,20,100,S002,90,90,A reckless fighter who believes chaos is the truest form of freedom.
+021,高文,Gold,Male,普攻 -20,20,110,S003,90,90,A reckless fighter who believes chaos is the truest form of freedom.
